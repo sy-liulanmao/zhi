@@ -1,0 +1,13 @@
+DOMAIN,cs.lyezi.xyz
+DOMAIN-KEYWORD,guangya
+DOMAIN-KEYWORD,herotbag
+DOMAIN-KEYWORD,lyezi.xyz
+DOMAIN-KEYWORD,office.com
+DOMAIN-SUFFIX,apple-cloudkit.com
+DOMAIN-SUFFIX,apple.com
+DOMAIN-SUFFIX,icloud.com
+DOMAIN-SUFFIX,microsoft.com
+DOMAIN-SUFFIX,microsoftstore.com
+DOMAIN-SUFFIX,mp.microsoft.com
+DOMAIN-SUFFIX,windows.com
+DOMAIN-SUFFIX,windowsupdate.com
