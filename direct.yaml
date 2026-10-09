@@ -4,6 +4,7 @@ payload:
   - DOMAIN-KEYWORD,office.com,DIRECT
   - DOMAIN-KEYWORD,herotbag,DIRECT
   - DOMAIN-KEYWORD,guangya,DIRECT
+  - DOMAIN,cs.lyezi.xyz,DIRECT
   # Apple
   - DOMAIN-SUFFIX,apple.com
   - DOMAIN-SUFFIX,icloud.com
