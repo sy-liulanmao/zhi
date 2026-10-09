@@ -1,4 +1,9 @@
 payload:
+  #零散规则
+  - DOMAIN-KEYWORD,office.com,DIRECT
+  - DOMAIN-KEYWORD,lyezi.xyz,DIRECT
+  - DOMAIN-KEYWORD,herotbag,DIRECT
+  - DOMAIN-KEYWORD,guangya,DIRECT
   # Apple
   - DOMAIN-SUFFIX,apple.com
   - DOMAIN-SUFFIX,icloud.com
