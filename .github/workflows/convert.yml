@@ -1,7 +1,7 @@
 
-name: Convert Mihomo Rules
+name: 直连规则集自动转换
 
-on:
+'on':
   push:
     paths:
       - "direct.yaml"
@@ -16,55 +16,68 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 下载仓库文件
         uses: actions/checkout@v4
 
-      - name: Install Mihomo
+      - name: 下载 Mihomo 转换工具
         shell: bash
         run: |
           set -e
-          url="https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-amd64-alpha-linux-amd64-compatible"
-          curl -fL "$url" -o mihomo
+          curl -fsSL \
+            https://api.github.com/repos/MetaCubeX/mihomo/releases/latest \
+            -o release.json
+
+          url=$(python3 -c '
+          import json
+          data = json.load(open("release.json"))
+          assets = data.get("assets", [])
+          matches = [
+              a["browser_download_url"]
+              for a in assets
+              if "linux-amd64-compatible" in a["name"]
+              and a["name"].endswith(".gz")
+          ]
+          if not matches:
+              raise SystemExit("没有找到 Linux AMD64 压缩包")
+          print(matches[0])
+          ')
+
+          curl -fL "$url" -o mihomo.gz
+          gzip -dc mihomo.gz > mihomo
           chmod +x mihomo
           ./mihomo -v
 
-      - name: Prepare domain rules
-        shell: bash
+      - name: 提取域名后缀规则
         run: |
           python3 - <<'PY'
           import re
           from pathlib import Path
 
-          source = Path("direct.yaml").read_text(
+          text = Path("direct.yaml").read_text(
               encoding="utf-8"
           )
-
           domains = set()
-          for line in source.splitlines():
+
+          for line in text.splitlines():
               line = line.strip()
               if not line.startswith("- "):
                   continue
 
               parts = [
-                  p.strip()
-                  for p in line[2:].split(",")
+                  x.strip()
+                  for x in line[2:].split(",")
               ]
 
               if len(parts) < 2:
                   continue
 
-              kind, value = parts[0], parts[1]
-
-              if kind == "DOMAIN-SUFFIX":
-                  if re.fullmatch(
-                      r"[A-Za-z0-9.-]+", value
-                  ):
-                      domains.add(value.lower())
+              if parts[0] == "DOMAIN-SUFFIX":
+                  domain = parts[1].lower()
+                  if re.fullmatch(r"[a-z0-9.-]+", domain):
+                      domains.add(domain)
 
           if not domains:
-              raise SystemExit(
-                  "No DOMAIN-SUFFIX rules found"
-              )
+              raise SystemExit("没有找到 DOMAIN-SUFFIX 规则")
 
           Path("direct.txt").write_text(
               "\n".join(sorted(domains)) + "\n",
@@ -72,18 +85,17 @@ jobs:
           )
           PY
 
-      - name: Convert to MRS
+      - name: 转换为二进制规则集
         run: |
           ./mihomo convert-ruleset domain text direct.txt direct.mrs
           test -s direct.mrs
 
-      - name: Commit MRS
-        shell: bash
+      - name: 保存转换结果
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add direct.txt direct.mrs
           if ! git diff --cached --quiet; then
-            git commit -m "Build direct MRS rules"
+            git commit -m "自动更新直连二进制规则集"
             git push
           fi
