@@ -47,46 +47,63 @@ jobs:
           chmod +x mihomo
           ./mihomo -v
 
-      - name: 提取域名后缀规则
+      - name: 提取支持的域名规则
+        shell: bash
         run: |
+          set -e
           python3 - <<'PY'
           import re
           from pathlib import Path
 
-          text = Path("direct.yaml").read_text(
-              encoding="utf-8"
-          )
-          domains = set()
+          text = Path("direct.yaml").read_text(encoding="utf-8-sig")
+          rules = set()
+          supported = {"DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN"}
 
           for line in text.splitlines():
               line = line.strip()
-              if not line.startswith("- "):
+
+              if line.startswith("- "):
+                  line = line[2:].strip()
+              else:
                   continue
 
-              parts = [
-                  x.strip()
-                  for x in line[2:].split(",")
-              ]
+              parts = [x.strip() for x in line.split(",")]
 
-              if len(parts) < 2:
+              if len(parts) < 2 or parts[0] not in supported:
                   continue
 
-              if parts[0] == "DOMAIN-SUFFIX":
-                  domain = parts[1].lower()
-                  if re.fullmatch(r"[a-z0-9.-]+", domain):
-                      domains.add(domain)
+              rule_type, value = parts[0], parts[1]
 
-          if not domains:
-              raise SystemExit("没有找到 DOMAIN-SUFFIX 规则")
+              if not value:
+                  continue
 
-          Path("direct.txt").write_text(
-              "\n".join(sorted(domains)) + "\n",
-              encoding="utf-8"
-          )
+              if rule_type in {"DOMAIN-SUFFIX", "DOMAIN"}:
+                  value = value.lower().rstrip(".")
+                  if not re.fullmatch(
+                      r"[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?",
+                      value
+                  ):
+                      continue
+              else:
+                  value = value.lower()
+
+              rules.add(f"{rule_type},{value}")
+
+          if not rules:
+              raise SystemExit("没有找到支持的域名规则，停止转换")
+
+          output = "\n".join(sorted(rules)) + "\n"
+          Path("direct.txt").write_text(output, encoding="utf-8")
+
+          print(f"提取完成，共 {len(rules)} 条规则")
+          for kind in sorted(supported):
+              count = sum(r.startswith(kind + ",") for r in rules)
+              print(f"{kind}: {count} 条")
           PY
 
       - name: 转换为二进制规则集
         run: |
+          set -e
           ./mihomo convert-ruleset domain text direct.txt direct.mrs
           test -s direct.mrs
 
