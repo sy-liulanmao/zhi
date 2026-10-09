@@ -1,0 +1,8 @@
+apple-cloudkit.com
+apple.com
+icloud.com
+microsoft.com
+microsoftstore.com
+mp.microsoft.com
+windows.com
+windowsupdate.com
