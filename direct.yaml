@@ -1,0 +1,12 @@
+payload:
+  # Apple
+  - DOMAIN-SUFFIX,apple.com
+  - DOMAIN-SUFFIX,icloud.com
+  - DOMAIN-SUFFIX,apple-cloudkit.com
+
+  # Microsoft 与微软商店
+  - DOMAIN-SUFFIX,microsoft.com
+  - DOMAIN-SUFFIX,microsoftstore.com
+  - DOMAIN-SUFFIX,windows.com
+  - DOMAIN-SUFFIX,mp.microsoft.com
+  - DOMAIN-SUFFIX,windowsupdate.com
