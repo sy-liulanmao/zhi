@@ -1,3 +1,4 @@
+DOMAIN,cs.lyezi.xyz
 DOMAIN-KEYWORD,guangya
 DOMAIN-KEYWORD,herotbag
 DOMAIN-KEYWORD,lyezi.xyz
