@@ -1,5 +1,6 @@
 payload:
   #零散规则
+  - DOMAIN-KEYWORD,lyezi.xyz,DIRECT
   - DOMAIN-KEYWORD,office.com,DIRECT
   - DOMAIN-KEYWORD,herotbag,DIRECT
   - DOMAIN-KEYWORD,guangya,DIRECT
