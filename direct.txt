@@ -1,4 +1,5 @@
 apple-cloudkit.com
+apple.com
 icloud.com
 microsoft.com
 microsoftstore.com
