@@ -1,1 +1,89 @@
 
+name: Convert Mihomo Rules
+
+on:
+  push:
+    paths:
+      - "direct.yaml"
+      - ".github/workflows/convert.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Mihomo
+        shell: bash
+        run: |
+          set -e
+          url="https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-amd64-alpha-linux-amd64-compatible"
+          curl -fL "$url" -o mihomo
+          chmod +x mihomo
+          ./mihomo -v
+
+      - name: Prepare domain rules
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          source = Path("direct.yaml").read_text(
+              encoding="utf-8"
+          )
+
+          domains = set()
+          for line in source.splitlines():
+              line = line.strip()
+              if not line.startswith("- "):
+                  continue
+
+              parts = [
+                  p.strip()
+                  for p in line[2:].split(",")
+              ]
+
+              if len(parts) < 2:
+                  continue
+
+              kind, value = parts[0], parts[1]
+
+              if kind == "DOMAIN-SUFFIX":
+                  if re.fullmatch(
+                      r"[A-Za-z0-9.-]+", value
+                  ):
+                      domains.add(value.lower())
+
+          if not domains:
+              raise SystemExit(
+                  "No DOMAIN-SUFFIX rules found"
+              )
+
+          Path("direct.txt").write_text(
+              "\n".join(sorted(domains)) + "\n",
+              encoding="utf-8"
+          )
+          PY
+
+      - name: Convert to MRS
+        run: |
+          ./mihomo convert-ruleset domain text direct.txt direct.mrs
+          test -s direct.mrs
+
+      - name: Commit MRS
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add direct.txt direct.mrs
+          if ! git diff --cached --quiet; then
+            git commit -m "Build direct MRS rules"
+            git push
+          fi
