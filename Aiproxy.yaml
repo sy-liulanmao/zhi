@@ -1,3 +1,4 @@
+payload:
   #ai规则集
   - DOMAIN-KEYWORD,openai
   - DOMAIN-KEYWORD,chatgpt
